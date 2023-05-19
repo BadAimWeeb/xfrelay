@@ -1,5 +1,5 @@
 (async () => {
-    await new Promise<void>(resolve => setTimeout(resolve, 1000)); // intentional delay
+    await new Promise<void>(resolve => setTimeout(resolve, 5000)); // intentional delay
 
     console.log("ctx_main `require`:", window.require);
     try {
@@ -8,10 +8,11 @@
         throw new Error("User is not logged in; will not establish tunnel.");
     }
 
-    await new Promise<void>(resolve => setTimeout(resolve, 1000)); // intentional delay
     while (!window.require("LSPlatformMessengerConfig")) {
         await new Promise<void>(resolve => setTimeout(resolve, 100));
     }
+    
+    await new Promise<void>(resolve => setTimeout(resolve, 1000)); // intentional delay
 
     let realtimeFB = window.require("LSPlatformMessengerConfig").config.realtimeUnderylingTransport();
     document.addEventListener('xfrelay_rlmain', (e: any) => {

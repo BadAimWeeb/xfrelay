@@ -12,7 +12,7 @@
                 "browser-relay.js"
             ],
             "matches": [
-                "https://www.facebook.com/*"
+                "https://www.messenger.com/*"
             ],
             "run_at": "document_start"
         },
@@ -21,7 +21,7 @@
                 "browser-main.js"
             ],
             "matches": [
-                "https://www.facebook.com/*"
+                "https://www.messenger.com/*"
             ],
             "world": "MAIN"
         }

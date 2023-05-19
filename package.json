@@ -1,0 +1,40 @@
+{
+  "name": "xfrelay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An extension that does things (undisclosed at this time)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BadAimWeeb/xfrelay.git"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "author": "BadAimWeeb",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BadAimWeeb/xfrelay/issues"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "homepage": "https://github.com/BadAimWeeb/xfrelay#readme",
+  "devDependencies": {
+    "@types/react": "^18.0.37",
+    "@types/react-dom": "^18.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "chrome-types": "^0.1.195",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.2",
+    "vite-plugin-execute": "^0.0.2"
+  }
+}

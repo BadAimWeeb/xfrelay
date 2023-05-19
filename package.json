@@ -24,17 +24,19 @@
   },
   "homepage": "https://github.com/BadAimWeeb/xfrelay#readme",
   "devDependencies": {
+    "@types/chrome": "^0.0.236",
+    "@types/node": "^20.2.1",
     "@types/react": "^18.0.37",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "@vitejs/plugin-react": "^4.0.0",
-    "chrome-types": "^0.1.195",
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
     "typescript": "^5.0.4",
     "vite": "^4.3.2",
     "vite-plugin-execute": "^0.0.2"
-  }
+  },
+  "type": "module"
 }

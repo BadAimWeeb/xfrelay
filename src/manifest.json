@@ -5,5 +5,28 @@
     "version": "0.1",
     "action": {
         "default_popup": "index.html"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "browser-relay.js"
+            ],
+            "matches": [
+                "https://www.facebook.com/*"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "js": [
+                "browser-main.js"
+            ],
+            "matches": [
+                "https://www.facebook.com/*"
+            ],
+            "world": "MAIN"
+        }
+    ],
+    "background": {
+        "service_worker": "service-worker.js"
     }
 }

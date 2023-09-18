@@ -19,10 +19,28 @@
         realtimeFB.publish(e.detail.data, e.detail.qos);
     });
 
+    window.addEventListener('unload', () => {
+        document.dispatchEvent(new CustomEvent('xfrelay_disconnect'));
+    });
+
     document.dispatchEvent(new CustomEvent('xfrelay_connect'));
 
     realtimeFB.subscribe((data: string) => {
         let e = new CustomEvent('xfrelay_mainrl', { detail: data });
         document.dispatchEvent(e);
     });
+
+    let injectedNotice = document.createElement('div');
+    injectedNotice.style.position = 'fixed';
+    injectedNotice.style.top = '4px';
+    injectedNotice.style.left = '4px';
+    injectedNotice.style.zIndex = "999999";
+    injectedNotice.style.color = "#0a0";
+    injectedNotice.style.fontWeight = "bold";
+    injectedNotice.style.fontSize = "16px";
+    injectedNotice.style.fontFamily = "monospace";
+    injectedNotice.style.textShadow = "0 0 4px #777";
+
+    injectedNotice.innerText = "XFRelay INJECTED";
+    document.body.appendChild(injectedNotice);
 })();

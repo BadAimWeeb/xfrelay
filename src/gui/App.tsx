@@ -71,7 +71,7 @@ function App() {
                     value={mode}
                 >
                     <FormControlLabel value="1" control={<Radio />} label="Use a relay server" />
-                    <FormControlLabel value="2" control={<Radio />} label="Use libp2p" />
+                    <FormControlLabel value="2" control={<Radio />} label="Use libp2p" disabled />
                 </RadioGroup>
             </FormControl>
 

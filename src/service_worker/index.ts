@@ -1,7 +1,10 @@
-import { hexToUint8Array, uint8arrayToRaw } from "./utils";
+import { hexToUint8Array } from "./utils";
 import { connect, Session as ProtoV2dSession } from "@badaimweeb/js-protov2d";
 import { DTSocketClient } from "@badaimweeb/js-dtsocket";
 import type { API } from "xfrelay_server";
+
+import base85 from "base85";
+import { Buffer } from "buffer";
 
 const SubtleCrypto = crypto.subtle;
 
@@ -24,10 +27,13 @@ let processMessageQueue = async () => {
         let iv = crypto.getRandomValues(new Uint8Array(16));
 
         let encrypted = await SubtleCrypto.encrypt({
-            name: "AES-GCM",
+            name: "AES-CBC",
             iv
         }, currentEncryptionKey, packedData);
-        let encryptedHex = uint8arrayToRaw(new Uint8Array(encrypted));
+
+        let buf = Buffer.from(new Uint8Array(encrypted));
+        let encryptedHex = base85.encode(buf, "z85");
+        console.log(buf, encryptedHex);
 
         dt.emit("data", id, encryptedHex);
     }
@@ -104,7 +110,7 @@ async function connectWithConfig(config: {
     }
 
     if (connection) {
-        currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(config.encryptionKey ?? ""), "AES-GCM", false, ["encrypt", "decrypt"]);
+        currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(config.encryptionKey ?? ""), "AES-CBC", false, ["encrypt", "decrypt"]);
         //AES.utils.hex.toBytes(config.encryptionKey ?? "");
         dt = new DTSocketClient<API>(connection);
         if (!await dt.p.registerInput(config.accountID)) {
@@ -148,7 +154,7 @@ chrome.storage.local.get("config", async (result) => {
 chrome.storage.local.onChanged.addListener(async (changes) => {
     if (changes.config) {
         if (changes.config.newValue?.encryptionKey !== changes.config.oldValue?.encryptionKey)
-            currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(changes.config.newValue.encryptionKey ?? ""), "AES-GCM", false, ["encrypt", "decrypt"]);
+            currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(changes.config.newValue.encryptionKey ?? ""), "AES-CBC", false, ["encrypt", "decrypt"]);
 
         if (changes.config.newValue?.relayServerAddress !== changes.config.oldValue?.relayServerAddress) {
             if (!connection) haltLoop.abort();

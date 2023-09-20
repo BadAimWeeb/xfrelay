@@ -26,7 +26,7 @@
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.1",
-    "aes-js": "^3.1.2",
+    "base85": "^3.1.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "react": "^18.2.0",

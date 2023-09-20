@@ -14,19 +14,3 @@ export function uint8arrayToHex(uint8array: Uint8Array) {
     }
     return result;
 }
-
-export function uint8arrayToRaw(uint8array: Uint8Array) {
-    let result = "";
-    for (let i = 0; i < uint8array.length; i++) {
-        result += String.fromCharCode(uint8array[i]);
-    }
-    return result;
-}
-
-export function rawToUint8Array(raw: string) {
-    let result = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) {
-        result[i] = raw.charCodeAt(i);
-    }
-    return result;
-}

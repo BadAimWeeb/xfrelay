@@ -35,7 +35,7 @@ let processMessageQueue = async () => {
         let encryptedHex = base85.encode(buf, "z85");
         console.log(buf, encryptedHex);
 
-        dt.emit("data", id, [...iv, encryptedHex]);
+        dt.emit("data", id, [...iv, ...encryptedHex]);
     }
     isMessageQueueProcessing = false;
 }

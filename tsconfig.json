@@ -20,7 +20,7 @@
       "noUnusedParameters": true,
       "noFallthroughCasesInSwitch": true
     },
-    "include": ["src"],
+    "include": ["src/gui"],
     "references": [
         { "path": "./tsconfig.node.json" }, 
         { "path": "./tsconfig.bmain.json" },

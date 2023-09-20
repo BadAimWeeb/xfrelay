@@ -40,6 +40,7 @@
     injectedNotice.style.fontSize = "16px";
     injectedNotice.style.fontFamily = "monospace";
     injectedNotice.style.textShadow = "0 0 4px #777";
+    injectedNotice.style.pointerEvents = "none";
 
     injectedNotice.innerText = "XFRelay INJECTED";
     document.body.appendChild(injectedNotice);

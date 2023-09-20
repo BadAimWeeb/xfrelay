@@ -19,16 +19,23 @@
     "url": "https://github.com/BadAimWeeb/xfrelay/issues"
   },
   "dependencies": {
+    "@badaimweeb/js-dtsocket": "^0.6.0",
+    "@badaimweeb/js-protov2d": "^0.4.2",
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.1",
+    "aes-js": "^3.1.2",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "xfrelay_server": "github:badaimweeb/xfrelay_server"
   },
   "homepage": "https://github.com/BadAimWeeb/xfrelay#readme",
   "devDependencies": {
+    "@types/aes-js": "^3.1.1",
     "@types/chrome": "^0.0.236",
     "@types/node": "^20.2.1",
     "@types/react": "^18.0.37",

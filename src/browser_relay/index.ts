@@ -24,7 +24,6 @@
     sPort.onDisconnect.addListener(reconnect);
 
     document.addEventListener('xfrelay_disconnect', () => {
-        sPort.postMessage([1, "disconnect"]);
         flag_disconnected = true;
         sPort.disconnect();
     });
@@ -41,6 +40,6 @@
         let data = e.detail as string;
         console.debug("ctx_relay received data:", data);
 
-        sPort.postMessage([0, data]);
+        sPort.postMessage(data);
     });
 })();

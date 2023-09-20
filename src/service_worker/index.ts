@@ -31,11 +31,11 @@ let processMessageQueue = async () => {
             iv
         }, currentEncryptionKey, packedData);
 
-        let buf = Buffer.from(new Uint8Array(encrypted));
+        let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
         let encryptedHex = base85.encode(buf, "z85");
         console.log(buf, encryptedHex);
 
-        dt.emit("data", id, [...iv, ...encryptedHex]);
+        dt.emit("data", id, encryptedHex);
     }
     isMessageQueueProcessing = false;
 }

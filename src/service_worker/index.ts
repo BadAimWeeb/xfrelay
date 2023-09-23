@@ -69,9 +69,15 @@ chrome.runtime.onConnect.addListener(function (port) {
             });
         });
 
-        port.onMessage.addListener(function (msg: string) {
+        port.onMessage.addListener(function (msg: {
+            type: "data" | "custom",
+            qos?: number
+            data: string
+        }) {
             console.debug("Received message from", port.name, msg);
-            messageQueue.push([port.name, msg]);
+            if (msg.type === "data")
+                messageQueue.push([port.name, msg.data]);
+
             processMessageQueue();
         });
     }
@@ -111,13 +117,73 @@ async function connectWithConfig(config: {
 
     if (connection) {
         currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(config.encryptionKey ?? ""), "AES-CBC", false, ["encrypt", "decrypt"]);
-        //AES.utils.hex.toBytes(config.encryptionKey ?? "");
         dt = new DTSocketClient<API>(connection);
         if (!await dt.p.registerInput(config.accountID)) {
             throw new Error("Failed to register input");
         }
 
         await dt.p.registerInputTab([...sPorts.keys()]);
+
+        dt.on("requestSpecificData", async (id, data, nonce) => {
+            let qos = Math.random();
+
+            let port = sPorts.get(id);
+            if (port) {
+                port.postMessage({
+                    type: "custom",
+                    qos,
+                    data
+                });
+
+                async function handleReturnMessage(data: {
+                    type: "data" | "custom",
+                    qos?: number,
+                    data: string
+                }) {
+                    if (data.type === "custom" && data.qos === qos) {
+                        port!.onMessage.removeListener(handleReturnMessage);
+
+                        let packedData = new TextEncoder().encode(data.data);
+                        let iv = crypto.getRandomValues(new Uint8Array(16));
+
+                        let encrypted = await SubtleCrypto.encrypt({
+                            name: "AES-CBC",
+                            iv
+                        }, currentEncryptionKey, packedData);
+
+                        let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
+                        let encryptedHex = base85.encode(buf, "z85");
+
+                        dt!.emit("specificData", nonce, encryptedHex);
+                    }
+                }
+
+                port.onMessage.addListener(handleReturnMessage);
+            }
+        });
+
+        dt.on("injData", (qos, data, tabID) => {
+            if (tabID) {
+                let port = sPorts.get(tabID);
+                if (port) {
+                    port.postMessage({
+                        type: "data",
+                        qos,
+                        data
+                    });
+                }
+            } else {
+                // pick random (unintendended behavior)
+                let port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
+                if (port) {
+                    port.postMessage({
+                        type: "data",
+                        qos,
+                        data
+                    });
+                }
+            }
+        });
 
         chrome.storage.session.set({
             status: {
@@ -157,7 +223,15 @@ chrome.storage.local.onChanged.addListener(async (changes) => {
             currentEncryptionKey = await SubtleCrypto.importKey("raw", hexToUint8Array(changes.config.newValue.encryptionKey ?? ""), "AES-CBC", false, ["encrypt", "decrypt"]);
 
         if (changes.config.newValue?.relayServerAddress !== changes.config.oldValue?.relayServerAddress) {
-            if (!connection) haltLoop.abort();
+            if (!connection) {
+                haltLoop.abort();
+            } else {
+                connection.close();
+                if (dt) {
+                    dt.removeAllListeners();
+                    dt = null;
+                }
+            }
             haltLoop = new AbortController();
             if (
                 changes.config.newValue &&

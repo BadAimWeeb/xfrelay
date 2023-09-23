@@ -11,12 +11,28 @@
     while (!window.require("LSPlatformMessengerConfig")) {
         await new Promise<void>(resolve => setTimeout(resolve, 100));
     }
-    
+
     await new Promise<void>(resolve => setTimeout(resolve, 1000)); // intentional delay
 
     let realtimeFB = window.require("LSPlatformMessengerConfig").config.realtimeUnderylingTransport();
     document.addEventListener('xfrelay_rlmain', (e: any) => {
-        realtimeFB.publish(e.detail.data, e.detail.qos);
+        if (e.detail.type === "data")
+            realtimeFB.publish(e.detail.data, e.detail.qos);
+
+        if (e.detail.type === "custom") {
+            switch (e.detail.data) {
+                case "currentUserID":
+                    let fbID = window.require("MqttWebConfig").fbid;
+                    let ev = new CustomEvent('xfrelay_mainrl', {
+                        detail: {
+                            type: "custom",
+                            qos: e.detail.qos,
+                            data: fbID
+                        }
+                    });
+                    document.dispatchEvent(ev);
+            }
+        }
     });
 
     window.addEventListener('unload', () => {
@@ -26,7 +42,12 @@
     document.dispatchEvent(new CustomEvent('xfrelay_connect'));
 
     realtimeFB.subscribe((data: string) => {
-        let e = new CustomEvent('xfrelay_mainrl', { detail: data });
+        let e = new CustomEvent('xfrelay_mainrl', {
+            detail: {
+                type: "data",
+                data
+            }
+        });
         document.dispatchEvent(e);
     });
 

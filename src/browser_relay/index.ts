@@ -30,7 +30,8 @@
 
     sPort.onMessage.addListener((msg: {
         data: string,
-        qos: number
+        qos: number,
+        type: "data" | "custom"
     }) => {
         let e = new CustomEvent('xfrelay_rlmain', { detail: msg });
         document.dispatchEvent(e);

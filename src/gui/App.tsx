@@ -8,7 +8,6 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 function App() {
     let [activeTab, setActiveTab] = useState(0);
-    let [activeFCAInstance, setActiveFCAInstance] = useState(0);
     let [connected, setConnected] = useState(false);
 
     useEffect(() => {
@@ -16,7 +15,6 @@ function App() {
             if (changes.status) {
                 setConnected(changes.status.newValue?.connected ?? false);
                 setActiveTab(changes.status.newValue?.activeTab ?? 0);
-                setActiveFCAInstance(changes.status.newValue?.activeFCAInstance ?? 0);
             }
         };
         chrome.storage.session.onChanged.addListener(listener);
@@ -24,7 +22,6 @@ function App() {
         chrome.storage.session.get("status", (result) => {
             setConnected(result.status?.connected ?? false);
             setActiveTab(result.status?.activeTab ?? 0);
-            setActiveFCAInstance(result.status?.activeFCAInstance ?? 0);
         });
 
         chrome.storage.local.get("config", (result) => {
@@ -58,7 +55,6 @@ function App() {
             }}>XFRelay <BoltIcon color={connected ? "success" : "error"} sx={{ position: "absolute" }} /></Typography><br />
             {/* active tab connection count */}
             <Typography variant="body1"><b>{activeTab}</b> active FBMSG tab(s)</Typography>
-            <Typography variant="body1"><b>{activeFCAInstance}</b> active remote instance(s)</Typography>
             <br />
 
             <FormControl>

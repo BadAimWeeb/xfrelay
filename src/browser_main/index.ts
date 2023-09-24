@@ -31,6 +31,18 @@
                         }
                     });
                     document.dispatchEvent(ev);
+                    break;
+                case "serverAppID":
+                    let serverID = window.require('ServerAppID').app_id;
+                    let ev2 = new CustomEvent('xfrelay_mainrl', {
+                        detail: {
+                            type: "custom",
+                            qos: e.detail.qos,
+                            data: serverID
+                        }
+                    });
+                    document.dispatchEvent(ev2);
+                    break;
             }
         }
     });

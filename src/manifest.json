@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "XFRelay",
-    "description": "An extension that does things (undisclosed at this time)",
-    "version": "0.1",
+    "description": "An extension that bridges Facebook Messenger WS data to other bots",
+    "version": "1.0.0",
     "action": {
         "default_popup": "index.html"
     },

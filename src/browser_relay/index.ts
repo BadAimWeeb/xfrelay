@@ -39,7 +39,6 @@
 
     document.addEventListener('xfrelay_mainrl', (e: any) => {
         let data = e.detail as string;
-        console.debug("ctx_relay received data:", data);
 
         sPort.postMessage(data);
     });

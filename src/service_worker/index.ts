@@ -33,7 +33,6 @@ let processMessageQueue = async () => {
 
         let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
         let encryptedHex = base85.encode(buf, "z85");
-        console.log(buf, encryptedHex);
 
         dt.emit("data", id, encryptedHex);
     }
@@ -74,7 +73,6 @@ chrome.runtime.onConnect.addListener(function (port) {
             qos?: number
             data: string
         }) {
-            console.debug("Received message from", port.name, msg);
             if (msg.type === "data") {
                 messageQueue.push([port.name, msg.data]);
             } else if (msg.type === "custom") {
@@ -181,7 +179,6 @@ async function connectWithConfig(config: {
                     }, currentEncryptionKey, encrypted);
 
                     let decoded = new TextDecoder().decode(decrypted);
-                    console.log("injData", qos, data, tabID, port, decoded);
 
                     port.postMessage({
                         type: "data",
@@ -249,6 +246,7 @@ chrome.storage.local.onChanged.addListener(async (changes) => {
                     dt = null;
                 }
             }
+            
             haltLoop = new AbortController();
             if (
                 changes.config.newValue &&
@@ -265,5 +263,5 @@ chrome.storage.local.onChanged.addListener(async (changes) => {
 setInterval(() => {
     // keep-alive
     dt?.p.registerInputTab([...sPorts.keys()]);
-}, 15000);
+}, 5000);
 

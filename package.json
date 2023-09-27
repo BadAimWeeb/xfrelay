@@ -1,8 +1,8 @@
 {
   "name": "xfrelay",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "An extension that does things (undisclosed at this time)",
+  "description": "An extension that bridges Facebook Messenger WS data to other bots",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BadAimWeeb/xfrelay.git"

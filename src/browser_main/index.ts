@@ -16,8 +16,12 @@
 
     let realtimeFB = window.require("LSPlatformMessengerConfig").config.realtimeUnderylingTransport();
     document.addEventListener('xfrelay_rlmain', (e: any) => {
-        if (e.detail.type === "data")
-            realtimeFB.publish(e.detail.data, e.detail.qos);
+        if (e.detail.type === "data") {
+            console.log(
+                e.detail,
+                realtimeFB.publish(e.detail.data, e.detail.qos)
+            );
+        }
 
         if (e.detail.type === "custom") {
             switch (e.detail.data) {
@@ -42,6 +46,17 @@
                         }
                     });
                     document.dispatchEvent(ev2);
+                    break;
+                case "lsVersion":
+                    let lsVersion = window.require('LSVersion');
+                    let ev3 = new CustomEvent('xfrelay_mainrl', {
+                        detail: {
+                            type: "custom",
+                            qos: e.detail.qos,
+                            data: lsVersion
+                        }
+                    });
+                    document.dispatchEvent(ev3);
                     break;
             }
         }

@@ -75,8 +75,12 @@ chrome.runtime.onConnect.addListener(function (port) {
             data: string
         }) {
             console.debug("Received message from", port.name, msg);
-            if (msg.type === "data")
+            if (msg.type === "data") {
                 messageQueue.push([port.name, msg.data]);
+            } else if (msg.type === "custom") {
+                // immediately send back
+                dt?.emit("specificData", msg.qos, msg.data);
+            }
 
             processMessageQueue();
         });
@@ -162,14 +166,27 @@ async function connectWithConfig(config: {
             }
         });
 
-        dt.on("injData", (qos, data, tabID) => {
+        dt.on("injData", async (qos, data, tabID) => {
             if (tabID) {
                 let port = sPorts.get(tabID);
                 if (port) {
+
+                    let buf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
+                    let iv = buf.slice(0, 16);
+                    let encrypted = buf.slice(16);
+
+                    let decrypted = await SubtleCrypto.decrypt({
+                        name: "AES-CBC",
+                        iv
+                    }, currentEncryptionKey, encrypted);
+
+                    let decoded = new TextDecoder().decode(decrypted);
+                    console.log("injData", qos, data, tabID, port, decoded);
+
                     port.postMessage({
                         type: "data",
                         qos,
-                        data
+                        data: decoded
                     });
                 }
             } else {

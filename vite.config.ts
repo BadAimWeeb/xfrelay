@@ -16,7 +16,7 @@ export default defineConfig({
                 browser_main: "src/browser_main/index.ts",
                 browser_relay: "src/browser_relay/index.ts",
                 service_worker: "src/service_worker/index.ts",
-                popup: "index.html"
+                popup_gui: "src/gui/main.tsx"
             },
             output: {
                 dir: "dist",
@@ -24,7 +24,8 @@ export default defineConfig({
                     info.name === "browser_main" ? "browser-main.js" :
                         info.name === "browser_relay" ? "browser-relay.js" :
                             info.name === "service_worker" ? "service-worker.js" :
-                                "assets/[name]-[hash].js"
+                                info.name === "popup_gui" ? "popup-gui.js" :
+                                    "assets/[name]-[hash].js"
             }
         },
         target: [

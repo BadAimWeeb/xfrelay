@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/cezaraugusto/chrome-extension-manifest-json-schema/main/manifest/manifest.schema.v3.json",
     "manifest_version": 3,
     "name": "XFRelay",
     "description": "An extension that bridges Facebook Messenger WS data to other bots",
@@ -31,6 +32,7 @@
         "type": "module"
     },
     "permissions": [
-        "storage"
+        "storage",
+        "externally_connectable"
     ]
 }

@@ -57,7 +57,7 @@ chrome.runtime.onConnect.addListener(function (port) {
         port.onDisconnect.addListener(function () {
             console.log("Port disconnected", port.name);
             sPorts.delete(port.name);
-            if (port.name !== "GUI" && dt) dt.p.unregisterInputTab(port.name);
+            if (port.name !== "GUI" && dt) dt.p.unregisterInputTab(port.name).catch(() => { });
 
             chrome.storage.session.set({
                 status: {
@@ -105,10 +105,11 @@ async function connectWithConfig(config: {
         try {
             connection = await connect({
                 url: (config.relayServerAddress ?? "").split("!")[0],
-                publicKey: {
+                publicKeys: [{
                     type: "hash",
-                    hash: config.relayServerAddress?.split("!")[1] ?? ""
-                }
+                    value: config.relayServerAddress?.split("!")[1] ?? ""
+                }],
+                disableWASM: true // we could get away with this
             });
             break;
         } catch {
@@ -207,15 +208,43 @@ async function connectWithConfig(config: {
             }
         });
 
+        let disconnected = () => {
+            chrome.storage.session.set({
+                status: {
+                    connected: false,
+                    activeTab: sPorts.size,
+                    activeFCAInstance: 0
+                }
+            });
+        }
+        connection.on("disconnected", disconnected);
+
+        let connected = () => {
+            chrome.storage.session.set({
+                status: {
+                    connected: true,
+                    activeTab: sPorts.size,
+                    activeFCAInstance: 0
+                }
+            });
+        }
+        connection.on("connected", connected);
+
         let updateResume = (newConn: ProtoV2dSession) => {
+            connection?.off("disconnected", disconnected);
+            connection?.off("connected", connected);
+
             connection = newConn;
             chrome.storage.local.get("config", async (result) => {
-                await dt!.p.registerInput(result.config?.accountID);
-                await dt!.p.registerInputTab([...sPorts.keys()]);
+                try {
+                    await dt!.p.registerInput(result.config?.accountID);
+                    await dt!.p.registerInputTab([...sPorts.keys()]);
+                } catch { }
             });
 
             connection.once("resumeFailed", updateResume);
         }
+
         connection.once("resumeFailed", updateResume);
     }
 }
@@ -240,13 +269,13 @@ chrome.storage.local.onChanged.addListener(async (changes) => {
             if (!connection) {
                 haltLoop.abort();
             } else {
-                connection.close();
+                connection.close("changed relay server address");
                 if (dt) {
                     dt.removeAllListeners();
                     dt = null;
                 }
             }
-            
+
             haltLoop = new AbortController();
             if (
                 changes.config.newValue &&
@@ -262,6 +291,6 @@ chrome.storage.local.onChanged.addListener(async (changes) => {
 
 setInterval(() => {
     // keep-alive
-    dt?.p.registerInputTab([...sPorts.keys()]);
+    dt?.p.registerInputTab([...sPorts.keys()]).catch(() => { });
 }, 5000);
 

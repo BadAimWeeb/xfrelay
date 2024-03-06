@@ -59,6 +59,47 @@
                     document.dispatchEvent(ev3);
                     break;
             }
+        } else if (e.detail.type === "http") {
+            let packet = JSON.parse(e.detail.data) as {
+                url: string,
+                method: string,
+                headers: { [key: string]: string },
+                body: string
+            }
+
+            fetch(e.detail.data.url, {
+                method: packet.method,
+                headers: packet.headers,
+                body: packet.body,
+                credentials: "same-origin"
+            }).then(async (res) => {
+                let body = await res.text();
+                let ev = new CustomEvent('xfrelay_mainrl', {
+                    detail: {
+                        type: "http",
+                        qos: e.detail.qos,
+                        data: JSON.stringify({
+                            success: true,
+                            status: res.status,
+                            headers: Array.from(res.headers.entries()),
+                            body
+                        })
+                    }
+                });
+                document.dispatchEvent(ev);
+            }).catch((e) => {
+                let ev = new CustomEvent('xfrelay_mainrl', {
+                    detail: {
+                        type: "http",
+                        qos: e.detail.qos,
+                        data: JSON.stringify({
+                            success: false,
+                            error: e.toString()
+                        })
+                    }
+                });
+                document.dispatchEvent(ev);
+            }); 
         }
     });
 

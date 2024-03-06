@@ -3,7 +3,7 @@
     "manifest_version": 3,
     "name": "XFRelay",
     "description": "An extension that bridges Facebook Messenger WS data to other bots",
-    "version": "1.1.0",
+    "version": "0.0.0-TO.BE.FILLED.ON.BUILD",
     "action": {
         "default_popup": "index.html"
     },

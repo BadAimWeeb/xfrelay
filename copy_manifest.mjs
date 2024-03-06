@@ -4,5 +4,9 @@ import { fileURLToPath } from "node:url";
 
 let currentDir = resolve(fileURLToPath(import.meta.url), "..");
 
-writeFileSync(resolve(currentDir, "dist", "manifest.json"), readFileSync(resolve(currentDir, "src", "manifest.json")));
+let packageJSON = JSON.parse(readFileSync(resolve(currentDir, "package.json"), { encoding: "utf-8" }));
+let manifest = JSON.parse(readFileSync(resolve(currentDir, "manifest.json"), { encoding: "utf-8" }));
+manifest.version = packageJSON.version;
+
+writeFileSync(resolve(currentDir, "dist", "manifest.json"), JSON.stringify(manifest, null, "\t"));
 writeFileSync(resolve(currentDir, "dist", "index.html"), readFileSync(resolve(currentDir, "index.html")));

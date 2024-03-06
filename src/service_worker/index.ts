@@ -200,6 +200,61 @@ async function connectWithConfig(config: {
             }
         });
 
+        dt.on("httpInjData", async (data, nonce, tabID) => {
+            let buf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
+            let iv = buf.slice(0, 16);
+            let encrypted = buf.slice(16);
+
+            let decrypted = await SubtleCrypto.decrypt({
+                name: "AES-CBC",
+                iv
+            }, currentEncryptionKey, encrypted);
+
+            let decoded = new TextDecoder().decode(decrypted);
+
+            let port: chrome.runtime.Port;
+            if (tabID) {
+                port = sPorts.get(tabID);
+            } else {
+                // pick random (unintendended behavior)
+                port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
+            }
+
+            let qos = Math.random();
+            if (port) {
+                port.postMessage({
+                    type: "http",
+                    qos,
+                    data: decoded
+                });
+            }
+
+            async function handleReturnMessage(data: {
+                type: "data" | "custom" | "http",
+                qos?: number,
+                data: string
+            }) {
+                if (data.type === "http" && data.qos === qos) {
+                    port!.onMessage.removeListener(handleReturnMessage);
+
+                    let packedData = new TextEncoder().encode(data.data);
+                    let iv = crypto.getRandomValues(new Uint8Array(16));
+
+                    let encrypted = await SubtleCrypto.encrypt({
+                        name: "AES-CBC",
+                        iv
+                    }, currentEncryptionKey, packedData);
+
+                    let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
+                    let encryptedHex = base85.encode(buf, "z85");
+
+                    dt!.emit("specificData", nonce, encryptedHex);
+                }
+            }
+
+            port.onMessage.addListener(handleReturnMessage);
+        });
+
         chrome.storage.session.set({
             status: {
                 connected: connection && connection.connected,

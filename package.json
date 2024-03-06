@@ -1,6 +1,6 @@
 {
   "name": "xfrelay",
-  "version": "1.2.0-beta",
+  "version": "1.2.0",
   "private": true,
   "description": "An extension that bridges Facebook Messenger WS data to other bots",
   "repository": {

@@ -1,3 +1,20 @@
+function generateOfflineThreadingID() {
+    let h = 4194303n;
+    let max_num = 9223372036854775807n;
+
+    let r = crypto.getRandomValues(new Uint32Array(2));
+    let r0 = BigInt(r[0]);
+    let r1 = BigInt(r[1]);
+    let fullR = (r0 << 32n) | r1;
+
+    let time = BigInt(Date.now());
+    let timeShifted = time << 22n;
+
+    let otid = ((fullR & h) | timeShifted) & max_num;
+
+    return otid.toString();
+}
+
 (async () => {
     await new Promise<void>(resolve => setTimeout(resolve, 5000)); // intentional delay
 
@@ -59,7 +76,9 @@
                     document.dispatchEvent(ev3);
                     break;
             }
-        } else if (e.detail.type === "http") {
+        }
+        
+        if (e.detail.type === "http") {
             let packet = JSON.parse(e.detail.data) as {
                 url: string,
                 method: string,
@@ -100,6 +119,32 @@
                 });
                 document.dispatchEvent(ev);
             }); 
+        }
+
+        if (e.detail.type === "upload") {
+            let packet = e.detail.data as {
+                filename: string,
+                data: Uint8Array
+            };
+
+            let file = new File([packet.data], packet.filename);
+
+            // another hacky api, nice
+            // btw, it is: 
+            //     0: onUploadStart, 1: onUploadProgress, 2: func return attachmentID (2nd param), 3: setupS2SLogging? (no, void 0 is OK), 
+            //     4: is voice clip (no), 5: array of file data, 6: offline threading ID, 7: unknown (keep it void 0), 8: unknown (keep it void 0), 
+            //     9: waveform data (in case of voice clip, ?), 10: nonce (keep it void 0), 11: string(actor? prob user ID)
+            window.require("MWPComposerMediaUploadUtil").startUpload(void 0, void 0, (_otid: string, attachmentID: number) => {
+                let ev = new CustomEvent('xfrelay_mainrl', {
+                    detail: {
+                        type: "upload",
+                        qos: e.detail.qos,
+                        data: attachmentID.toString()
+                    }
+                });
+                document.dispatchEvent(ev);
+            }, void 0, false, [file], [generateOfflineThreadingID()], void 0, void 0, void 0, void 0, window.require("MqttWebConfig").fbid);
+            // why the fuck doesn't we also hack otid function then? idk.
         }
     });
 

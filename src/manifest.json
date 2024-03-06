@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/cezaraugusto/chrome-extension-manifest-json-schema/main/manifest/manifest.schema.v3.json",
     "manifest_version": 3,
     "name": "XFRelay",
-    "description": "An extension that bridges Facebook Messenger WS data to other bots",
+    "description": "An extension that bridges Facebook Messenger WS data (and other stuff) to other bots software",
     "version": "0.0.0-TO.BE.FILLED.ON.BUILD",
     "action": {
         "default_popup": "index.html"
@@ -13,7 +13,10 @@
                 "browser-relay.js"
             ],
             "matches": [
-                "https://www.messenger.com/*"
+                "https://www.messenger.com/*",
+                "https://www.facebook.com/*",
+                "https://web.facebook.com/*",
+                "https://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion/*"
             ],
             "run_at": "document_start"
         },
@@ -22,7 +25,10 @@
                 "browser-main.js"
             ],
             "matches": [
-                "https://www.messenger.com/*"
+                "https://www.messenger.com/*",
+                "https://www.facebook.com/*",
+                "https://web.facebook.com/*",
+                "https://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion/*"
             ],
             "world": "MAIN"
         }

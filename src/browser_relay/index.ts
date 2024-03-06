@@ -29,9 +29,9 @@
     });
 
     sPort.onMessage.addListener((msg: {
-        data: string,
+        data: string // lol,
         qos: number,
-        type: "data" | "custom"
+        type: "data" | "custom" | "http" | "upload"
     }) => {
         let e = new CustomEvent('xfrelay_rlmain', { detail: msg });
         document.dispatchEvent(e);

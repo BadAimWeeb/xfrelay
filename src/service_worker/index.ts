@@ -6,6 +6,9 @@ import type { API } from "xfrelay_server";
 import base85 from "base85";
 import { Buffer } from "buffer";
 
+import { Zstd } from "@hpcc-js/wasm/zstd";
+const zstd = await Zstd.load();
+
 const SubtleCrypto = crypto.subtle;
 
 let sPorts = new Map<string, chrome.runtime.Port>();
@@ -249,6 +252,82 @@ async function connectWithConfig(config: {
                     let encryptedHex = base85.encode(buf, "z85");
 
                     dt!.emit("specificData", nonce, encryptedHex);
+                }
+            }
+
+            port.onMessage.addListener(handleReturnMessage);
+        });
+
+        dt.on("uploadAttachmentData", async (data, nonce, tabID) => {
+            let port: chrome.runtime.Port;
+            if (tabID) {
+                port = sPorts.get(tabID);
+            } else {
+                // pick random (unintendended behavior)
+                port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
+            }
+
+            let eBuf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
+            let iv = eBuf.slice(0, 16);
+            let encrypted = eBuf.slice(16);
+
+            let decrypted = await SubtleCrypto.decrypt({
+                name: "AES-CBC",
+                iv
+            }, currentEncryptionKey, encrypted);
+
+            let buf = new Uint8Array(decrypted);
+
+            if (!port) return;
+
+            let qos = Math.random();
+
+            // Figuring out compression algorithm based on first byte
+            let uncompressed: Uint8Array;
+            switch (buf[0]) {
+                case 0x00: // Uncompressed
+                    uncompressed = buf.slice(1);
+                    break;
+                case 0x01: // zstd
+                    uncompressed = zstd.decompress(buf.slice(1));
+                    break;
+                default:
+                    throw new Error("Unknown compression algorithm");
+            }
+
+            // This is a hack to get back file name (we'll definitely refactor this code later on after upgrading relay server).
+            let filenameLength = uncompressed[0] // maximum file name length is 255;
+            let filename = new TextDecoder().decode(uncompressed.slice(1, 1 + filenameLength));
+
+            port.postMessage({
+                type: "upload",
+                qos,
+                data: {
+                    filename,
+                    data: uncompressed.slice(1 + filenameLength)
+                }
+            });
+
+            async function handleReturnMessage(data: {
+                type: "data" | "custom" | "http" | "upload",
+                qos?: number,
+                data: string
+            }) {
+                if (data.type === "upload" && data.qos === qos) {
+                    port!.onMessage.removeListener(handleReturnMessage);
+
+                    let packedData = new TextEncoder().encode(data.data);
+                    let iv = crypto.getRandomValues(new Uint8Array(16));
+
+                    let encrypted = await SubtleCrypto.encrypt({
+                        name: "AES-CBC",
+                        iv
+                    }, currentEncryptionKey, packedData);
+
+                    let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
+                    let encryptedHex = base85.encode(buf, "z85");
+
+                    dt!.emit("uploadAttachmentResponse", nonce, encryptedHex);
                 }
             }
 

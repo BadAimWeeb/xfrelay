@@ -250,7 +250,8 @@ async function connectWithConfig(config: {
                     let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
                     let encryptedHex = base85.encode(buf, "z85");
 
-                    dt!.emit("specificData", nonce, encryptedHex);
+                    // it's inverse. i know. it's a mess.
+                    dt!.emit("specificData", encryptedHex, nonce);
                 }
             }
 
@@ -327,7 +328,8 @@ async function connectWithConfig(config: {
                     let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
                     let encryptedHex = base85.encode(buf, "z85");
 
-                    dt!.emit("uploadAttachmentResponse", nonce, encryptedHex);
+                    // it's inverse. i know. it's a mess.
+                    dt!.emit("uploadAttachmentResponse", encryptedHex, nonce);
                 }
             }
 

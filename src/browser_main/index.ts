@@ -124,10 +124,10 @@ function generateOfflineThreadingID() {
         if (e.detail.type === "upload") {
             let packet = e.detail.data as {
                 filename: string,
-                data: Uint8Array
+                data: number[]
             };
 
-            let file = new File([packet.data], packet.filename);
+            let file = new File([Uint8Array.from(packet.data)], packet.filename);
 
             // another hacky api, nice
             // btw, it is: 

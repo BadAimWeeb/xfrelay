@@ -304,7 +304,7 @@ async function connectWithConfig(config: {
                 qos,
                 data: {
                     filename,
-                    data: uncompressed.slice(1 + filenameLength)
+                    data: Array.from(uncompressed.slice(1 + filenameLength))
                 }
             });
 

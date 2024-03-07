@@ -7,7 +7,6 @@ import base85 from "base85";
 import { Buffer } from "buffer";
 
 import { Zstd } from "@hpcc-js/wasm/zstd";
-const zstd = await Zstd.load();
 
 const SubtleCrypto = crypto.subtle;
 
@@ -289,6 +288,7 @@ async function connectWithConfig(config: {
                     uncompressed = buf.slice(1);
                     break;
                 case 0x01: // zstd
+                    const zstd = await Zstd.load();
                     uncompressed = zstd.decompress(buf.slice(1));
                     break;
                 default:

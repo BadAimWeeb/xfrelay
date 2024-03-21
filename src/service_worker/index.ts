@@ -282,8 +282,9 @@ async function connectWithConfig(config: {
 
             let qos = Math.random();
 
-            // Figuring out compression algorithm based on first byte
+            // Figuring out compression/mime algorithm based on first byte
             let uncompressed: Uint8Array;
+            let mime = "";
             switch (buf[0]) {
                 case 0x00: // Uncompressed
                     uncompressed = buf.slice(1);
@@ -291,6 +292,18 @@ async function connectWithConfig(config: {
                 case 0x01: // zstd
                     const zstd = await Zstd.load();
                     uncompressed = zstd.decompress(buf.slice(1));
+                    break;
+                case 0x7F: // Uncompressed with mime hack
+                    let mimeLength = buf[1];
+                    mime = new TextDecoder().decode(buf.slice(2, 2 + mimeLength));
+                    uncompressed = buf.slice(2 + mimeLength);
+                    break;
+                case 0x80: // zstd with mime hack
+                    const zstd2 = await Zstd.load();
+                    let uc = zstd2.decompress(buf.slice(1));
+                    let mimeLength2 = uc[0];
+                    mime = new TextDecoder().decode(uc.slice(1, 1 + mimeLength2));
+                    uncompressed = uc.slice(1 + mimeLength2);
                     break;
                 default:
                     throw new Error("Unknown compression algorithm");
@@ -305,7 +318,8 @@ async function connectWithConfig(config: {
                 qos,
                 data: {
                     filename,
-                    data: Array.from(uncompressed.slice(1 + filenameLength))
+                    data: Array.from(uncompressed.slice(1 + filenameLength)),
+                    mime
                 }
             });
 
@@ -328,7 +342,7 @@ async function connectWithConfig(config: {
                     let buf = Buffer.from([...iv, ...new Uint8Array(encrypted)]);
                     let encryptedHex = base85.encode(buf, "z85");
 
-                    // it's inverse. i know. it's a mess.
+                    // it's inversed. i know. it's a mess.
                     dt!.emit("uploadAttachmentResponse", encryptedHex, nonce);
                 }
             }

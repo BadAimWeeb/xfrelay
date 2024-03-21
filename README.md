@@ -4,7 +4,7 @@ XFRelay is an extension that allows you to bridge/relay Facebook Messenger data 
 
 *An server will be needed to relay data to. See [example XFRelay server software](https://github.com/BadAimWeeb/xfrelay_server) if you're interested in running one.*
 
-Current release: [1.2.0](https://github.com/BadAimWeeb/xfrelay/releases/tag/1.2.0)
+Current release: [1.3.0](https://github.com/BadAimWeeb/xfrelay/releases/tag/1.3.0)
 
 Compatible with: 
 - Chromium-based browsers (Chrome, Edge, Opera, etc.)

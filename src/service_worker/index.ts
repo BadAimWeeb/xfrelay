@@ -168,41 +168,47 @@ async function connectWithConfig(config: {
         });
 
         dt.on("injData", async (qos, data, tabID) => {
+            let port: chrome.runtime.Port;
             if (tabID) {
-                let port = sPorts.get(tabID);
-                if (port) {
-
-                    let buf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
-                    let iv = buf.slice(0, 16);
-                    let encrypted = buf.slice(16);
-
-                    let decrypted = await SubtleCrypto.decrypt({
-                        name: "AES-CBC",
-                        iv
-                    }, currentEncryptionKey, encrypted);
-
-                    let decoded = new TextDecoder().decode(decrypted);
-
-                    port.postMessage({
-                        type: "data",
-                        qos,
-                        data: decoded
-                    });
-                }
+                port = sPorts.get(tabID);
             } else {
                 // pick random (unintendended behavior)
-                let port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
-                if (port) {
-                    port.postMessage({
-                        type: "data",
-                        qos,
-                        data
-                    });
-                }
+                port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
+            }
+
+            if (port) {
+                let buf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
+                let iv = buf.slice(0, 16);
+                let encrypted = buf.slice(16);
+
+                let decrypted = await SubtleCrypto.decrypt({
+                    name: "AES-CBC",
+                    iv
+                }, currentEncryptionKey, encrypted);
+
+                let decoded = new TextDecoder().decode(decrypted);
+
+                port.postMessage({
+                    type: "data",
+                    qos,
+                    data: decoded
+                });
             }
         });
 
         dt.on("httpInjData", async (data, nonce, tabID) => {
+            let port: chrome.runtime.Port;
+            if (tabID) {
+                port = sPorts.get(tabID);
+            } else {
+                // pick random (unintendended behavior)
+                port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
+            }
+
+            let qos = Math.random();
+
+            if (!port) return;
+
             let buf = Uint8Array.from([...base85.decode(data, "z85") as Buffer]);
             let iv = buf.slice(0, 16);
             let encrypted = buf.slice(16);
@@ -214,22 +220,11 @@ async function connectWithConfig(config: {
 
             let decoded = new TextDecoder().decode(decrypted);
 
-            let port: chrome.runtime.Port;
-            if (tabID) {
-                port = sPorts.get(tabID);
-            } else {
-                // pick random (unintendended behavior)
-                port = [...sPorts.values()][Math.floor(Math.random() * sPorts.size)];
-            }
-
-            let qos = Math.random();
-            if (port) {
-                port.postMessage({
-                    type: "http",
-                    qos,
-                    data: decoded
-                });
-            }
+            port.postMessage({
+                type: "http",
+                qos,
+                data: decoded
+            });
 
             async function handleReturnMessage(data: {
                 type: "data" | "custom" | "http",
@@ -306,6 +301,7 @@ async function connectWithConfig(config: {
                     uncompressed = uc.slice(1 + mimeLength2);
                     break;
                 default:
+                    console.error(`received unknown compression algorithm: ${buf[0]}`);
                     throw new Error("Unknown compression algorithm");
             }
 

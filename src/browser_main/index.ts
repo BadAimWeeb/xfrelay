@@ -16,13 +16,21 @@ function generateOfflineThreadingID() {
 }
 
 (async () => {
-    await new Promise<void>(resolve => setTimeout(resolve, 5000)); // intentional delay
+    for (let retry = 0; retry < 120; retry++) {
+        // Wait till full require code is loaded.
+
+        if ("require" in window) break;
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
+    }
 
     console.log("ctx_main `require`:", window.require);
-    try {
-        window.require("MqttWebConfig"); // check if user is logged in
-    } catch (e) {
-        throw new Error("User is not logged in; will not establish tunnel.");
+    for (let retry = 0; retry < 10; retry++) {
+        try {
+            window.require("MqttWebConfig"); // check if user is logged in AND config is loaded in 10 seconds
+        } catch (e) {
+            if (retry >= 9) throw new Error("User is not logged in; will not establish tunnel.");
+            await new Promise<void>(resolve => setTimeout(resolve, 1000));
+        }
     }
 
     while (!window.require("LSPlatformMessengerConfig")) {
@@ -77,7 +85,7 @@ function generateOfflineThreadingID() {
                     break;
             }
         }
-        
+
         if (e.detail.type === "http") {
             let packet = JSON.parse(e.detail.data) as {
                 url: string,
@@ -118,7 +126,7 @@ function generateOfflineThreadingID() {
                     }
                 });
                 document.dispatchEvent(ev);
-            }); 
+            });
         }
 
         if (e.detail.type === "upload") {

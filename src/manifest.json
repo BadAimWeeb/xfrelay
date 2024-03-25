@@ -40,5 +40,18 @@
     "permissions": [
         "storage",
         "externally_connectable"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "browser-main.js"
+            ],
+            "matches": [
+                "https://www.messenger.com/*",
+                "https://www.facebook.com/*",
+                "https://web.facebook.com/*",
+                "https://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion/*"
+            ]
+        }
     ]
 }

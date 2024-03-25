@@ -130,3 +130,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# chrome extension build
+*.crx

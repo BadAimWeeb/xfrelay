@@ -1,21 +1,35 @@
-function generateOfflineThreadingID() {
-    let h = 4194303n;
-    let max_num = 9223372036854775807n;
-
-    let r = crypto.getRandomValues(new Uint32Array(2));
-    let r0 = BigInt(r[0]);
-    let r1 = BigInt(r[1]);
-    let fullR = (r0 << 32n) | r1;
-
-    let time = BigInt(Date.now());
-    let timeShifted = time << 22n;
-
-    let otid = ((fullR & h) | timeShifted) & max_num;
-
-    return otid.toString();
-}
-
 (async () => {
+    if ("chrome" in window && typeof window.chrome === "object" && chrome.runtime && chrome.runtime.id) {
+        // not in MAIN context, uh oh.
+        // this happens when extension is ran on Chrome <111.
+        console.log("XFRelay BM: Look like we are in the wrong context. Switching to MAIN context by injecting through script tag...");
+
+        let selfURL = chrome.runtime.getURL("browser-main.js");
+    
+        let script = document.createElement('script');
+        script.src = selfURL;
+        document.body.appendChild(script);
+
+        return;
+    }
+
+    function generateOfflineThreadingID() {
+        let h = 4194303n;
+        let max_num = 9223372036854775807n;
+    
+        let r = crypto.getRandomValues(new Uint32Array(2));
+        let r0 = BigInt(r[0]);
+        let r1 = BigInt(r[1]);
+        let fullR = (r0 << 32n) | r1;
+    
+        let time = BigInt(Date.now());
+        let timeShifted = time << 22n;
+    
+        let otid = ((fullR & h) | timeShifted) & max_num;
+    
+        return otid.toString();
+    }
+
     for (let retry = 0; retry < 120; retry++) {
         // Wait till full require code is loaded.
 
